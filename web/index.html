@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>IPL Tools</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="logo-area" aria-hidden="true"></div>
+
+                <nav class="menu" role="navigation" aria-label="Main menu">
+                    <div class="menu-track" id="menuTrack"></div>
+                    <button class="menu-item active" data-page="home">
+                        Home
+                    </button>
+                    <button class="menu-item" data-page="predict">
+                        Match Prediction
+                    </button>
+                    <button class="menu-item" data-page="players">
+                        Players
+                    </button>
+                </nav>
+
+                <div class="right-area">
+                    <label class="dark-toggle">
+                        <input id="darkToggle" type="checkbox" />
+                        <span class="slider" aria-hidden="true"></span>
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section id="home" class="page active">
+                <h1>Welcome</h1>
+                <p>
+                    Simple, scalable site. Use the menu to go to Match
+                    Prediction or Players.
+                </p>
+            </section>
+
+            <section id="predict" class="page">
+                <h2>Match Prediction</h2>
+                <div class="match-boxes">
+                    <div class="team-box" id="teamBox1">
+                        <label>Team</label>
+                        <select id="team1"></select>
+                        <label>Year</label>
+                        <select id="year1"></select>
+                    </div>
+
+                    <div class="team-box" id="teamBox2">
+                        <label>Team</label>
+                        <select id="team2"></select>
+                        <label>Year</label>
+                        <select id="year2"></select>
+                    </div>
+                </div>
+
+                <div class="predict-actions">
+                    <button id="predictBtn" class="primary">Predict</button>
+                    <div id="result" class="result"></div>
+                </div>
+            </section>
+
+            <section id="players" class="page">
+                <h2>Players</h2>
+                <p>(blank for now)</p>
+            </section>
+        </main>
+
+        <script src="script.js"></script>
+    </body>
+</html>
