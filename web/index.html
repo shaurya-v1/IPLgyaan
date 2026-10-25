@@ -24,9 +24,9 @@
                     <a class="nav-item" data-route="/players" href="/players"
                         >Players</a
                     >
-                    <a class="nav-item" data-route="/compare" href="/compare"
-                        >Compare</a
-                    >
+                    <a class="nav-item" data-route="/compare" href="/compare">
+                        Compare
+                    </a>
                     <a
                         class="nav-item"
                         data-route="/predictor"
@@ -85,13 +85,47 @@
             </section>
 
             <section id="page-players" class="page">
-                <h2>Players</h2>
-                <p>(empty for now)</p>
+                <div class="players-search-wrap" id="playersSearchWrap">
+                    <input
+                        id="playerSearchInput"
+                        class="player-search-input"
+                        type="text"
+                        placeholder="Enter player name"
+                        autocomplete="off"
+                    />
+                    <div
+                        id="playerSearchResults"
+                        class="player-search-results"
+                    ></div>
+                </div>
+
+                <div id="playerSearchHint" class="player-search-hint">
+                    Search a player to view role, batting/bowling styles, team
+                    timeline, and season stats.
+                </div>
+
+                <div id="playerProfile" class="player-profile hidden"></div>
             </section>
 
             <section id="page-compare" class="page">
-                <h2>Compare</h2>
-                <p>(empty for now)</p>
+                <h2 class="compare-title">Player Comparison</h2>
+
+                <div class="compare-search-wrap hidden" id="compareSearchWrap">
+                    <input
+                        id="compareSearchInput"
+                        class="player-search-input"
+                        type="text"
+                        placeholder="Search Player"
+                        autocomplete="off"
+                    />
+                    <div
+                        id="compareSearchResults"
+                        class="player-search-results"
+                    ></div>
+                </div>
+
+                <div id="compareCards" class="compare-cards"></div>
+                <div id="compareStats" class="compare-stats-wrap"></div>
             </section>
 
             <section id="page-predictor" class="page">
