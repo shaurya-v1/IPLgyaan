@@ -596,6 +596,26 @@ model-viewer {
     text-align: center;
 }
 
+.compare-actions {
+    margin-left: 180px;
+    width: calc(100% - 180px);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.compare-add-btn {
+    background: #151c26;
+    color: #cfd8e7;
+    border: 1px solid #374256;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
 .compare-toolbar {
     display: flex;
     align-items: center;
@@ -642,11 +662,8 @@ model-viewer {
 }
 
 .compare-search-wrap {
-    position: fixed;
-    top: 92px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(560px, calc(100vw - 32px));
+    position: relative;
+    width: min(560px, 100%);
     z-index: 80;
 }
 
@@ -668,7 +685,7 @@ model-viewer {
     position: relative;
     border-radius: 12px;
     padding: 12px;
-    min-height: 260px;
+    min-height: 280px;
     display: flex;
     flex-direction: column;
 }
@@ -705,22 +722,22 @@ model-viewer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     text-align: center;
-    gap: 6px;
-    min-height: 170px;
+    min-height: 180px;
+    flex: 1;
 }
 
 .compare-player-img {
-    width: 78px;
-    height: 78px;
+    width: 117px;
+    height: 117px;
     object-fit: contain;
     border-radius: 8px;
     background: transparent;
 }
 
 .compare-player-name {
-    margin: 0;
+    margin: 20px 0 0;
     font-size: 24px;
     font-weight: 800;
 }
@@ -822,6 +839,18 @@ model-viewer {
     font-weight: 700;
 }
 
+.compare-team-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.compare-team-cell img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
 .compare-best {
     color: #74e334;
 }
@@ -859,6 +888,7 @@ model-viewer {
         grid-template-columns: 1fr;
     }
 
+    .compare-actions,
     .compare-toolbar,
     .compare-cards,
     .compare-stats-wrap {

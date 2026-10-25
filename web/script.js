@@ -880,7 +880,12 @@ function renderCompareCards() {
 function valueForMetric(season, key) {
     if (!season) return 0;
     if (key === "role") return season._role || "—";
-    if (key === "team") return season.team_name || "—";
+    if (key === "team") {
+        return {
+            name: season.team_name || "—",
+            image: season.team_image || "",
+        };
+    }
     if (key === "matches") {
         const b = Number(season.batting_stats?.innings_batted || 0);
         const bw = Number(season.bowling_stats?.innings_bowled || 0);
@@ -945,7 +950,17 @@ function renderCompareSection(title, metrics, selectedRows) {
             r.className = "compare-row";
             const inner = document.createElement("div");
             inner.className = "compare-value";
-            inner.textContent = String(v);
+
+            if (m.key === "team" && v && typeof v === "object") {
+                const teamName = escapeHtml(v.name || "—");
+                const teamImg = v.image
+                    ? `<img src="${escapeHtml(v.image)}" alt="${teamName}" />`
+                    : "";
+                inner.innerHTML = `<span class="compare-team-cell">${teamImg}<span>${teamName}</span></span>`;
+            } else {
+                inner.textContent = String(v);
+            }
+
             if (highlightMask[i]) inner.classList.add("compare-best");
             r.appendChild(inner);
             valueCols[i].appendChild(r);
@@ -980,8 +995,8 @@ function renderCompareStats() {
     }
 
     const generalMetrics = [
-        { key: "role", label: "Primary Role", text: true },
         { key: "team", label: "Team", text: true },
+        { key: "role", label: "Primary Role", text: true },
         { key: "matches", label: "Matches Played" },
     ];
 

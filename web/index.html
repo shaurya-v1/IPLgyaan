@@ -110,18 +110,27 @@
             <section id="page-compare" class="page">
                 <h2 class="compare-title">Player Comparison</h2>
 
-                <div class="compare-search-wrap hidden" id="compareSearchWrap">
-                    <input
-                        id="compareSearchInput"
-                        class="player-search-input"
-                        type="text"
-                        placeholder="Search Player"
-                        autocomplete="off"
-                    />
+                <div class="compare-actions">
+                    <button id="addComparePlayerBtn" class="compare-add-btn">
+                        + Add Player
+                    </button>
+
                     <div
-                        id="compareSearchResults"
-                        class="player-search-results"
-                    ></div>
+                        class="compare-search-wrap hidden"
+                        id="compareSearchWrap"
+                    >
+                        <input
+                            id="compareSearchInput"
+                            class="player-search-input"
+                            type="text"
+                            placeholder="Search Player"
+                            autocomplete="off"
+                        />
+                        <div
+                            id="compareSearchResults"
+                            class="player-search-results"
+                        ></div>
+                    </div>
                 </div>
 
                 <div id="compareCards" class="compare-cards"></div>
