@@ -65,10 +65,16 @@ def api_teams():
         # sanitize column names
         df.columns = [c.strip().strip("\ufeff") for c in df.columns]
         _team_list = []
+
+        # Hide known duplicate aliases in team selector (keep one canonical entry)
+        # EDIT HERE if you want to merge/remove more aliases later.
+        HIDDEN_TEAM_IDS = {3604}  # Rising Pune Supergiants (alias of id 4)
+
         for _, r in df.iterrows():
-            _team_list.append(
-                {"team_id": int(r["team_id"]), "team_name": r["team_name"]}
-            )
+            tid = int(r["team_id"])
+            if tid in HIDDEN_TEAM_IDS:
+                continue
+            _team_list.append({"team_id": tid, "team_name": r["team_name"]})
     return jsonify(_team_list)
 
 
