@@ -21,7 +21,7 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: Helvetica, Arial, sans-serif;
-    overflow-y: hidden !important; /* Force disables horizontal scrolling */
+    overflow-y: hidden !important;
 }
 
 .site-header {
@@ -101,7 +101,6 @@ body {
     display: block;
 }
 
-/* enable vertical scrolling only inside Players page */
 #page-players {
     height: calc(100vh - 150px);
     overflow-y: auto;
@@ -139,7 +138,7 @@ body {
     align-items: center;
     margin-top: 80px;
     margin-right: 0;
-    transform: none; /* Removed transform to stop pushing viewport */
+    transform: none;
 }
 
 .model-section {
@@ -221,6 +220,97 @@ model-viewer {
     padding: 11px 12px;
     font-size: 20px;
     font-weight: 600;
+}
+
+/* Custom Select Dropdown with Team Logos */
+.custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.select-trigger {
+    width: 100%;
+    background: #11161d;
+    color: #f2f4f7;
+    border: 1px solid #2d3642;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    text-align: left;
+}
+
+.select-trigger .trigger-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.select-trigger img,
+.option-item img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.select-trigger .chevron {
+    font-size: 12px;
+    color: #8b95a5;
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+}
+
+.custom-select.open .chevron {
+    transform: rotate(180deg);
+}
+
+.select-dropdown {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #11161d;
+    border: 1px solid #2d3642;
+    border-radius: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.custom-select.open .select-dropdown {
+    display: block;
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    color: #f2f4f7;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 1px solid #1a2029;
+    transition: background 0.15s ease;
+}
+
+.option-item:last-child {
+    border-bottom: none;
+}
+
+.option-item:hover,
+.option-item.selected {
+    background: #1c232e;
 }
 
 .predict-center {
@@ -674,7 +764,6 @@ model-viewer {
     margin-bottom: 18px;
 }
 
-/* reserve a left rail so labels can sit far-left while player cols align */
 .compare-cards,
 .compare-stats-wrap {
     margin-left: 180px;
@@ -740,10 +829,6 @@ model-viewer {
     margin: 20px 0 0;
     font-size: 24px;
     font-weight: 800;
-}
-
-.compare-player-role {
-    margin-top: 0;
 }
 
 .compare-player-role {

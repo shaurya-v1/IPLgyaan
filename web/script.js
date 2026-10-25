@@ -109,8 +109,13 @@ async function apiPost(path, body) {
 let predictorInitialized = false;
 let teamMetaById = new Map();
 
-const team1Sel = document.getElementById("team1");
-const team2Sel = document.getElementById("team2");
+const team1Custom = document.getElementById("team1Custom");
+const team2Custom = document.getElementById("team2Custom");
+const team1Trigger = document.getElementById("team1Trigger");
+const team2Trigger = document.getElementById("team2Trigger");
+const team1Dropdown = document.getElementById("team1Dropdown");
+const team2Dropdown = document.getElementById("team2Dropdown");
+
 const year1Sel = document.getElementById("year1");
 const year2Sel = document.getElementById("year2");
 const predictBtn = document.getElementById("predictBtn");
@@ -121,30 +126,51 @@ const teamCard2 = document.getElementById("teamCard2");
 const team1Logo = document.getElementById("team1Logo");
 const team2Logo = document.getElementById("team2Logo");
 
-function fillTeamSelect(sel, teams) {
-    sel.innerHTML = "";
+let selectedTeam1 = null;
+let selectedTeam2 = null;
+
+function renderCustomDropdown(dropdownEl, teams, onSelect) {
+    dropdownEl.innerHTML = "";
     teams.forEach((t) => {
-        const opt = document.createElement("option");
-        opt.value = t.team_id;
-        opt.textContent = t.team_name;
-        sel.appendChild(opt);
+        const item = document.createElement("div");
+        item.className = "option-item";
+        item.dataset.teamId = t.team_id;
+
+        const imgHtml = t.image
+            ? `<img src="${escapeHtml(t.image)}" alt="${escapeHtml(t.team_name)}" />`
+            : "";
+        item.innerHTML = `${imgHtml}<span>${escapeHtml(t.team_name)}</span>`;
+
+        item.addEventListener("click", () => {
+            onSelect(t);
+        });
+        dropdownEl.appendChild(item);
     });
 }
 
-function setPredictorDirty() {
-    predictBtn.classList.remove("hidden");
-    resultDiv.innerHTML = "";
+function updateCustomTrigger(triggerEl, team) {
+    const content = triggerEl.querySelector(".trigger-content");
+    if (!team) {
+        content.innerHTML = "Select Team";
+        return;
+    }
+    const imgHtml = team.image
+        ? `<img src="${escapeHtml(team.image)}" alt="${escapeHtml(team.team_name)}" />`
+        : "";
+    content.innerHTML = `${imgHtml}<span>${escapeHtml(team.team_name)}</span>`;
 }
 
-function applyTeamVisuals(teamSel, cardEl, logoEl) {
-    const teamId = Number(teamSel.value);
-    const meta = teamMetaById.get(teamId);
+function setPredictorDirty() {
+    predictBtn?.classList.remove("hidden");
+    if (resultDiv) resultDiv.innerHTML = "";
+}
 
-    const bg =
-        meta?.color && String(meta.color).trim() ? meta.color : "#2c2f36";
+function applyTeamVisuals(team, cardEl, logoEl) {
+    if (!team) return;
+    const bg = team.color && String(team.color).trim() ? team.color : "#2c2f36";
     cardEl.style.background = bg;
 
-    const img = meta?.image || "";
+    const img = team.image || "";
     if (img) {
         logoEl.src = img;
         logoEl.style.display = "block";
@@ -154,19 +180,17 @@ function applyTeamVisuals(teamSel, cardEl, logoEl) {
     }
 }
 
-async function updateYearsFor(teamSel, yearSel) {
-    const teamId = teamSel.value;
+async function updateYearsForTeam(team, yearSel) {
+    if (!team) return;
     yearSel.innerHTML = "";
 
     try {
-        let years = await apiGet(`/years?team_id=${teamId}`);
+        let years = await apiGet(`/years?team_id=${team.team_id}`);
 
         if (!years || years.length === 0) {
-            const teamName =
-                teamSel.options[teamSel.selectedIndex]?.text || null;
-            if (teamName) {
+            if (team.team_name) {
                 years = await apiGet(
-                    `/years?team_name=${encodeURIComponent(teamName)}`,
+                    `/years?team_name=${encodeURIComponent(team.team_name)}`,
                 );
             }
         }
@@ -194,45 +218,106 @@ async function updateYearsFor(teamSel, yearSel) {
     }
 }
 
+async function handleTeamSelection(
+    team,
+    customSelectEl,
+    triggerEl,
+    cardEl,
+    logoEl,
+    yearSel,
+    teamNum,
+) {
+    if (teamNum === 1) selectedTeam1 = team;
+    else selectedTeam2 = team;
+
+    updateCustomTrigger(triggerEl, team);
+    applyTeamVisuals(team, cardEl, logoEl);
+    await updateYearsForTeam(team, yearSel);
+    customSelectEl.classList.remove("open");
+    setPredictorDirty();
+}
+
 async function initPredictionPage() {
     if (predictorInitialized) return;
 
     try {
         const teams = await apiGet("/teams");
-
         teamMetaById = new Map(teams.map((t) => [Number(t.team_id), t]));
 
-        fillTeamSelect(team1Sel, teams);
-        fillTeamSelect(team2Sel, teams);
-
         if (teams.length > 0) {
-            team1Sel.value = teams[0].team_id;
-            team2Sel.value = teams[Math.min(1, teams.length - 1)].team_id;
+            renderCustomDropdown(team1Dropdown, teams, (team) => {
+                handleTeamSelection(
+                    team,
+                    team1Custom,
+                    team1Trigger,
+                    teamCard1,
+                    team1Logo,
+                    year1Sel,
+                    1,
+                );
+            });
 
-            applyTeamVisuals(team1Sel, teamCard1, team1Logo);
-            applyTeamVisuals(team2Sel, teamCard2, team2Logo);
+            renderCustomDropdown(team2Dropdown, teams, (team) => {
+                handleTeamSelection(
+                    team,
+                    team2Custom,
+                    team2Trigger,
+                    teamCard2,
+                    team2Logo,
+                    year2Sel,
+                    2,
+                );
+            });
 
-            await updateYearsFor(team1Sel, year1Sel);
-            await updateYearsFor(team2Sel, year2Sel);
+            const team1 = teams[0];
+            const team2 = teams[Math.min(1, teams.length - 1)];
+
+            await handleTeamSelection(
+                team1,
+                team1Custom,
+                team1Trigger,
+                teamCard1,
+                team1Logo,
+                year1Sel,
+                1,
+            );
+            await handleTeamSelection(
+                team2,
+                team2Custom,
+                team2Trigger,
+                teamCard2,
+                team2Logo,
+                year2Sel,
+                2,
+            );
         }
 
         predictorInitialized = true;
     } catch (e) {
         console.error(e);
-        resultDiv.textContent = "Failed to load teams";
+        if (resultDiv) resultDiv.textContent = "Failed to load teams";
     }
 }
 
-team1Sel?.addEventListener("change", async () => {
-    applyTeamVisuals(team1Sel, teamCard1, team1Logo);
-    await updateYearsFor(team1Sel, year1Sel);
-    setPredictorDirty();
+team1Trigger?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    team2Custom?.classList.remove("open");
+    team1Custom?.classList.toggle("open");
 });
 
-team2Sel?.addEventListener("change", async () => {
-    applyTeamVisuals(team2Sel, teamCard2, team2Logo);
-    await updateYearsFor(team2Sel, year2Sel);
-    setPredictorDirty();
+team2Trigger?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    team1Custom?.classList.remove("open");
+    team2Custom?.classList.toggle("open");
+});
+
+document.addEventListener("click", (e) => {
+    if (team1Custom && !team1Custom.contains(e.target)) {
+        team1Custom.classList.remove("open");
+    }
+    if (team2Custom && !team2Custom.contains(e.target)) {
+        team2Custom.classList.remove("open");
+    }
 });
 
 year1Sel?.addEventListener("change", setPredictorDirty);
@@ -242,19 +327,23 @@ predictBtn?.addEventListener("click", async () => {
     const season1 = Number(year1Sel.value);
     const season2 = Number(year2Sel.value);
 
-    if (!Number.isFinite(season1) || !Number.isFinite(season2)) {
-        resultDiv.innerHTML = `<div class="result-line">Please select valid years for both teams</div>`;
+    if (
+        !Number.isFinite(season1) ||
+        !Number.isFinite(season2) ||
+        !selectedTeam1 ||
+        !selectedTeam2
+    ) {
+        resultDiv.innerHTML = `<div class="result-line">Please select valid teams and years</div>`;
         return;
     }
 
-    // MODEL TEAM-ID MAP (edit here when model IDs differ from UI IDs)
     const MODEL_ID_MAP = {
-        1068: 2, // Deccan Chargers -> Sunrisers Hyderabad
-        3604: 4, // Rising Pune Supergiants -> Rising Pune Supergiant
+        1068: 2,
+        3604: 4,
     };
 
-    const uiTeam1 = Number(team1Sel.value);
-    const uiTeam2 = Number(team2Sel.value);
+    const uiTeam1 = Number(selectedTeam1.team_id);
+    const uiTeam2 = Number(selectedTeam2.team_id);
 
     const payload = {
         team1_id: MODEL_ID_MAP[uiTeam1] || uiTeam1,
@@ -278,10 +367,8 @@ predictBtn?.addEventListener("click", async () => {
 
         clearInterval(timer);
 
-        const uiTeam1Name =
-            team1Sel.options[team1Sel.selectedIndex]?.text || r.team1_name;
-        const uiTeam2Name =
-            team2Sel.options[team2Sel.selectedIndex]?.text || r.team2_name;
+        const uiTeam1Name = selectedTeam1.team_name || r.team1_name;
+        const uiTeam2Name = selectedTeam2.team_name || r.team2_name;
 
         const t1 = Number(r.team1_pct);
         const t2 = Number(r.team2_pct);
@@ -301,8 +388,6 @@ predictBtn?.addEventListener("click", async () => {
                   ];
 
         resultDiv.innerHTML = winnerFirst.join("");
-
-        // hide predict button until any selection changes
         predictBtn.classList.add("hidden");
     } catch (e) {
         clearInterval(timer);
@@ -860,7 +945,6 @@ function renderCompareCards() {
             <div class="compare-card-head" style="color:${textColor};">
                 <img class="compare-player-img" src="${escapeHtml(p.image || "")}" alt="${escapeHtml(p.player_full_name || p.player_name)}" />
                 <h3 class="compare-player-name">${escapeHtml(displayName)}</h3>
-
             </div>
             <div class="compare-card-controls">
                 <select data-season-for="${pid}">
