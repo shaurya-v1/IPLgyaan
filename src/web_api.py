@@ -17,7 +17,8 @@ from features import (
 app = Flask(__name__, static_folder="../web", static_url_path="")
 
 ROOT = Path(__file__).resolve().parents[1]
-TEAMS_CSV = ROOT / "data_backup" / "teams_data.csv"
+TEAMS_CSV = ROOT / "data" / "teams_data.csv"
+TEAMS_CSV_FALLBACK = ROOT / "data_backup" / "teams_data.csv"
 YEARS_CSV = ROOT / "data" / "yearwise_squads.csv"
 TEAM_YEARS_CSV = ROOT / "data" / "team_years.csv"  # preferred years source
 MODEL_PATH = predict_fast.MODEL_PATH
@@ -59,9 +60,10 @@ def script():
 def api_teams():
     global _team_list
     if _team_list is None:
-        if not TEAMS_CSV.exists():
+        source_csv = TEAMS_CSV if TEAMS_CSV.exists() else TEAMS_CSV_FALLBACK
+        if not source_csv.exists():
             return jsonify([])
-        df = pd.read_csv(TEAMS_CSV)
+        df = pd.read_csv(source_csv)
         # sanitize column names
         df.columns = [c.strip().strip("\ufeff") for c in df.columns]
         _team_list = []
@@ -74,7 +76,29 @@ def api_teams():
             tid = int(r["team_id"])
             if tid in HIDDEN_TEAM_IDS:
                 continue
-            _team_list.append({"team_id": tid, "team_name": r["team_name"]})
+
+            color = r["color"] if "color" in df.columns else ""
+            image = r["image"] if "image" in df.columns else ""
+            if pd.isna(color):
+                color = ""
+            if pd.isna(image):
+                image = ""
+            image = str(image).strip()
+            if (
+                image
+                and not image.startswith("http://")
+                and not image.startswith("https://")
+            ):
+                image = f"https://{image}"
+
+            _team_list.append(
+                {
+                    "team_id": tid,
+                    "team_name": r["team_name"],
+                    "color": str(color).strip(),
+                    "image": image,
+                }
+            )
     return jsonify(_team_list)
 
 

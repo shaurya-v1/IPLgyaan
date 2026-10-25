@@ -96,26 +96,44 @@
 
             <section id="page-predictor" class="page">
                 <h2>Match Prediction</h2>
-                <div class="match-boxes">
-                    <div class="team-box" id="teamBox1">
-                        <label>Team</label>
-                        <select id="team1"></select>
-                        <label>Year</label>
-                        <select id="year1"></select>
+
+                <div class="match-cards" id="matchCards">
+                    <div class="team-card" id="teamCard1">
+                        <div class="team-logo-wrap">
+                            <img
+                                id="team1Logo"
+                                class="team-logo"
+                                alt="Team 1 logo"
+                            />
+                        </div>
+                        <div class="team-controls">
+                            <select id="team1"></select>
+                            <select id="year1"></select>
+                        </div>
                     </div>
 
-                    <div class="team-box" id="teamBox2">
-                        <label>Team</label>
-                        <select id="team2"></select>
-                        <label>Year</label>
-                        <select id="year2"></select>
+                    <div class="team-card" id="teamCard2">
+                        <div class="team-logo-wrap">
+                            <img
+                                id="team2Logo"
+                                class="team-logo"
+                                alt="Team 2 logo"
+                            />
+                        </div>
+                        <div class="team-controls">
+                            <select id="team2"></select>
+                            <select id="year2"></select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="predict-actions">
-                    <button id="predictBtn" class="primary">Predict</button>
-                    <div id="result" class="result"></div>
+                <div class="predict-center">
+                    <button id="predictBtn" class="primary">
+                        Run Simulation
+                    </button>
                 </div>
+
+                <div id="result" class="result"></div>
             </section>
         </main>
 
