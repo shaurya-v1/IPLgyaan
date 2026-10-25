@@ -1,5 +1,3 @@
-import json
-import os
 from pathlib import Path
 
 import joblib
@@ -36,6 +34,12 @@ _data_cache = None
 
 # Serve frontend
 @app.route("/")
+@app.route("/home")
+@app.route("/players")
+@app.route("/compare")
+@app.route("/predictor")
+@app.route("/match-predictor")
+@app.route("/match-preditor")
 def index():
     return send_from_directory(app.static_folder, "index.html")
 

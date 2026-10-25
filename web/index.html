@@ -2,47 +2,98 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>IPL Tools</title>
-        <link rel="stylesheet" href="styles.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>IPLgyaan</title>
+        <link rel="stylesheet" href="/styles.css" />
+        <script
+            type="module"
+            src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+        ></script>
     </head>
     <body>
-        <header class="topbar">
-            <div class="topbar-inner">
-                <div class="logo-area" aria-hidden="true"></div>
+        <header class="site-header">
+            <div class="header-shell">
+                <div class="brand-slot">
+                    <!-- EDIT SITE TITLE HERE -->
+                    <a href="/" class="brand-title">IPLgyaan</a>
+                </div>
 
-                <nav class="menu" role="navigation" aria-label="Main menu">
-                    <div class="menu-track" id="menuTrack"></div>
-                    <button class="menu-item active" data-page="home">
-                        Home
-                    </button>
-                    <button class="menu-item" data-page="predict">
-                        Match Prediction
-                    </button>
-                    <button class="menu-item" data-page="players">
-                        Players
-                    </button>
+                <nav class="main-nav" aria-label="Main navigation">
+                    <!-- EDIT NAV ITEMS HERE (label + data-route) -->
+                    <a class="nav-item" data-route="/" href="/">Home</a>
+                    <a class="nav-item" data-route="/players" href="/players"
+                        >Players</a
+                    >
+                    <a class="nav-item" data-route="/compare" href="/compare"
+                        >Compare</a
+                    >
+                    <a
+                        class="nav-item"
+                        data-route="/predictor"
+                        href="/predictor"
+                        >Predictor</a
+                    >
                 </nav>
 
-                <div class="right-area">
-                    <label class="dark-toggle">
-                        <input id="darkToggle" type="checkbox" />
-                        <span class="slider" aria-hidden="true"></span>
-                    </label>
-                </div>
+                <!-- Right side intentionally empty for future use -->
+                <div class="right-slot" aria-hidden="true"></div>
             </div>
         </header>
 
-        <main class="container">
-            <section id="home" class="page active">
-                <h1>Welcome</h1>
-                <p>
-                    Simple, scalable site. Use the menu to go to Match
-                    Prediction or Players.
-                </p>
+        <main class="page-wrap">
+            <section id="page-home" class="page">
+                <div class="hero-grid">
+                    <div class="hero-copy">
+                        <!-- EDIT HOMEPAGE TITLE HERE -->
+                        <h1>[WIP IPL title]</h1>
+                        <!-- EDIT HOMEPAGE TEXT HERE -->
+                        <p>
+                            Welcome to IPL stats. Explore player/team stats,
+                            match predictions, and more.
+                        </p>
+                        <p>
+                            Keep this section simple and editable as your
+                            project grows.
+                        </p>
+                    </div>
+
+                    <div class="hero-model">
+                        <div class="model-section">
+                            <model-viewer
+                                id="stadiumViewer"
+                                src="/cricket_stadium.glb"
+                                alt="3D Cricket Stadium"
+                                crossorigin="anonymous"
+                                camera-target="0m -4m 0m"
+                                camera-orbit="0deg 60deg 80m"
+                                min-camera-orbit="auto 60deg 80m"
+                                max-camera-orbit="auto 60deg 105m"
+                                disable-zoom
+                                disable-pan
+                                auto-rotate
+                                rotation-per-second="15deg"
+                                auto-rotate-delay="0"
+                                shadow-intensity="1"
+                                camera-controls
+                                interaction-prompt="none"
+                            >
+                            </model-viewer>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section id="predict" class="page">
+            <section id="page-players" class="page">
+                <h2>Players</h2>
+                <p>(empty for now)</p>
+            </section>
+
+            <section id="page-compare" class="page">
+                <h2>Compare</h2>
+                <p>(empty for now)</p>
+            </section>
+
+            <section id="page-predictor" class="page">
                 <h2>Match Prediction</h2>
                 <div class="match-boxes">
                     <div class="team-box" id="teamBox1">
@@ -65,13 +116,8 @@
                     <div id="result" class="result"></div>
                 </div>
             </section>
-
-            <section id="players" class="page">
-                <h2>Players</h2>
-                <p>(blank for now)</p>
-            </section>
         </main>
 
-        <script src="script.js"></script>
+        <script src="/script.js"></script>
     </body>
 </html>
