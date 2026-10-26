@@ -17,11 +17,17 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
-    max-width: 100vw;
+    min-height: 100vh;
     background: var(--bg);
     color: var(--text);
     font-family: Helvetica, Arial, sans-serif;
+    overflow-x: hidden !important;
+}
+
+/* Locked viewport height ONLY for Home page */
+body.no-scroll {
     overflow-y: hidden !important;
+    height: 100vh;
 }
 
 .site-header {
@@ -91,7 +97,6 @@ body {
     max-width: 1320px;
     margin: 28px auto 40px;
     padding: 0 22px;
-    overflow-x: hidden;
 }
 
 .page {
@@ -101,11 +106,12 @@ body {
     display: block;
 }
 
-#page-players {
-    height: calc(100vh - 150px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 6px;
+/* Reset internal section scrolling so the browser scrollbar is used */
+#page-players,
+#page-compare {
+    height: auto;
+    overflow: visible;
+    padding-right: 0;
 }
 
 .hero-grid {
@@ -137,8 +143,6 @@ body {
     justify-content: flex-end;
     align-items: center;
     margin-top: 80px;
-    margin-right: 0;
-    transform: none;
 }
 
 .model-section {
@@ -146,14 +150,12 @@ body {
     min-height: 520px;
     background: transparent;
     padding: 0;
-    overflow: hidden;
 }
 
 model-viewer {
     width: 100%;
     height: 560px;
     background: transparent;
-    overflow: hidden;
 }
 
 /* Predictor */
@@ -162,13 +164,6 @@ model-viewer {
 #page-compare h2 {
     margin: 0 0 18px;
     font-size: 42px;
-}
-
-#page-compare {
-    height: calc(100vh - 150px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 6px;
 }
 
 #page-predictor h2 {
@@ -681,14 +676,13 @@ model-viewer {
     color: #d5deeb;
 }
 
-/* Compare */
+/* Compare clean layout */
 .compare-title {
     text-align: center;
 }
 
 .compare-actions {
-    margin-left: 180px;
-    width: calc(100% - 180px);
+    width: 100%;
     margin-bottom: 12px;
     display: flex;
     align-items: center;
@@ -706,51 +700,6 @@ model-viewer {
     cursor: pointer;
 }
 
-.compare-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-    margin-left: 180px;
-    width: calc(100% - 180px);
-}
-
-.small-action-btn {
-    width: 120px;
-    height: 120px;
-    background: #11161d;
-    color: #cfd8e7;
-    border: 1px solid #2d3642;
-    border-radius: 14px;
-    padding: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.add-player-icon {
-    width: 56px;
-    height: 56px;
-    border: 2px solid #cfd8e7;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 34px;
-    font-weight: 500;
-    line-height: 1;
-}
-
-.add-player-text {
-    font-size: 20px;
-    font-weight: 600;
-    text-transform: none;
-}
-
 .compare-search-wrap {
     position: relative;
     width: min(560px, 100%);
@@ -759,15 +708,20 @@ model-viewer {
 
 .compare-cards {
     display: grid;
-    grid-template-columns: repeat(var(--compare-card-cols, 2), minmax(0, 1fr));
-    gap: 12px;
+    /* Aligns 1:1 with .compare-grid by adding a 180px spacer on the left */
+    grid-template-columns: 180px repeat(
+            var(--compare-card-cols, 2),
+            minmax(0, 1fr)
+        );
+    gap: 8px; /* Match the 8px gap of .compare-grid */
     margin-bottom: 18px;
+    width: 100%;
 }
 
-.compare-cards,
-.compare-stats-wrap {
-    margin-left: 180px;
-    width: calc(100% - 180px);
+/* Hide card rendering inside the 180px spacer slot */
+.compare-cards::before {
+    content: "";
+    display: block;
 }
 
 .compare-card {
@@ -831,13 +785,6 @@ model-viewer {
     font-weight: 800;
 }
 
-.compare-player-role {
-    margin-top: 3px;
-    font-size: 16px;
-    font-weight: 700;
-    opacity: 0.95;
-}
-
 .compare-card-controls {
     margin-top: auto;
     display: grid;
@@ -878,6 +825,7 @@ model-viewer {
 
 .compare-stats-wrap {
     margin-top: 10px;
+    width: 100%;
 }
 
 .compare-section-title {
@@ -891,8 +839,7 @@ model-viewer {
     display: grid;
     grid-template-columns: 180px repeat(var(--cmp-cols, 2), 1fr);
     gap: 8px;
-    margin-left: -180px;
-    width: calc(100% + 180px);
+    width: 100%;
 }
 
 .compare-label-col,
@@ -975,20 +922,6 @@ model-viewer {
         grid-template-columns: 1fr;
     }
 
-    .compare-actions,
-    .compare-toolbar,
-    .compare-cards,
-    .compare-stats-wrap {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .compare-grid {
-        grid-template-columns: 170px repeat(var(--cmp-cols, 2), 1fr);
-        margin-left: 0;
-        width: 100%;
-    }
-
     .player-profile {
         grid-template-columns: 1fr;
     }
@@ -1045,38 +978,12 @@ model-viewer {
         grid-template-columns: 1fr;
     }
 
-    .compare-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .small-action-btn {
-        width: 100%;
-        height: 92px;
-        border-radius: 14px;
-        flex-direction: row;
-        justify-content: flex-start;
-        padding: 14px;
-        gap: 12px;
-    }
-
-    .add-player-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 24px;
-    }
-
-    .add-player-text {
-        font-size: 20px;
-    }
-
     .compare-search-wrap {
         width: 100%;
     }
 
     .compare-grid {
         grid-template-columns: 1fr;
-        margin-left: 0;
         width: 100%;
     }
 }

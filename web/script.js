@@ -39,6 +39,9 @@ function showPageByPath(pathname) {
     pages.forEach((p) => p.classList.toggle("active", p.id === pageId));
     setActiveNav(normalized === "/home" ? "/" : normalized);
 
+    // Locks body height ONLY when viewing Home tab
+    document.body.classList.toggle("no-scroll", pageId === "page-home");
+
     if (pageId === "page-predictor") {
         initPredictionPage();
     }
@@ -794,58 +797,71 @@ let compareInitialized = false;
 let compareSearchTimer = null;
 let compareSearchSelectedIndex = -1;
 let compareTargetSlot = null;
-let comparePlayerIds = [];
-const compareProfiles = new Map();
-const COMPARE_STORAGE_KEY = "comparePlayerIds";
+let compareItems = []; // Stores objects: { instanceId, playerId, selectedSeason }
+const compareProfiles = new Map(); // Stores player metadata by playerId
+const COMPARE_STORAGE_KEY = "comparePlayerItems";
 const COMPARE_MAX = 4;
 
 function syncAddPlayerVisibility() {
     if (!addComparePlayerBtn) return;
     addComparePlayerBtn.classList.toggle(
         "hidden",
-        comparePlayerIds.length >= COMPARE_MAX,
+        compareItems.length >= COMPARE_MAX,
     );
-    if (comparePlayerIds.length >= COMPARE_MAX) {
+    if (compareItems.length >= COMPARE_MAX) {
         closeCompareSearch();
     }
 }
 
-function getStoredCompareIds() {
+function getStoredCompareItems() {
     try {
         const raw = localStorage.getItem(COMPARE_STORAGE_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         if (!Array.isArray(parsed)) return [];
         return parsed
-            .map((x) => Number(x))
-            .filter((x) => Number.isFinite(x))
+            .filter((x) => x && Number.isFinite(Number(x.playerId)))
             .slice(0, COMPARE_MAX);
     } catch {
         return [];
     }
 }
 
-function setStoredCompareIds(ids) {
-    comparePlayerIds = Array.from(new Set(ids)).slice(0, COMPARE_MAX);
-    localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(comparePlayerIds));
+function setStoredCompareItems(items) {
+    compareItems = items.slice(0, COMPARE_MAX);
+    localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compareItems));
 }
 
 function addPlayerToCompare(playerId) {
-    const ids = getStoredCompareIds();
-    const next = [playerId, ...ids.filter((x) => x !== playerId)].slice(
-        0,
-        COMPARE_MAX,
-    );
-    setStoredCompareIds(next);
+    const items = getStoredCompareItems();
+    const newItem = {
+        instanceId: `${playerId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        playerId: Number(playerId),
+        selectedSeason: null,
+    };
+    const next = [newItem, ...items].slice(0, COMPARE_MAX);
+    setStoredCompareItems(next);
 }
 
 function upsertPlayerAtSlot(playerId, slotIndex = null) {
-    let ids = comparePlayerIds.filter((x) => x !== playerId);
+    let items = [...compareItems];
+    const newItem = {
+        instanceId: `${playerId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        playerId: Number(playerId),
+        selectedSeason: null,
+    };
+
     let slot = slotIndex;
-    if (!Number.isFinite(slot)) slot = ids.length;
-    slot = Math.max(0, Math.min(slot, ids.length));
-    ids.splice(slot, 0, playerId);
-    setStoredCompareIds(ids.slice(0, COMPARE_MAX));
+    if (!Number.isFinite(slot)) slot = items.length;
+    slot = Math.max(0, Math.min(slot, items.length));
+
+    if (slot < items.length) {
+        items[slot] = newItem;
+    } else {
+        items.push(newItem);
+    }
+
+    setStoredCompareItems(items.slice(0, COMPARE_MAX));
 }
 
 function chooseSeason(career) {
@@ -899,13 +915,13 @@ function closeCompareSearch() {
 
 function renderCompareCards() {
     compareCards.innerHTML = "";
-    const visible = comparePlayerIds.slice(0, COMPARE_MAX);
+    const visible = compareItems.slice(0, COMPARE_MAX);
     const slotCount = Math.min(COMPARE_MAX, Math.max(2, visible.length));
     compareCards.style.setProperty("--compare-card-cols", String(slotCount));
 
     for (let i = 0; i < slotCount; i += 1) {
-        const pid = visible[i];
-        if (!pid) {
+        const item = visible[i];
+        if (!item) {
             const empty = document.createElement("div");
             empty.className = "compare-card compare-card-empty";
             empty.setAttribute("data-empty-slot", String(i));
@@ -917,13 +933,13 @@ function renderCompareCards() {
             continue;
         }
 
-        const p = compareProfiles.get(pid);
+        const p = compareProfiles.get(item.playerId);
         if (!p) continue;
 
         const seasons = (p.career || []).map((x) => x.season);
         const selectedSeason =
-            p._selectedSeason ?? chooseSeason(p.career || []);
-        p._selectedSeason = selectedSeason;
+            item.selectedSeason ?? chooseSeason(p.career || []);
+        item.selectedSeason = selectedSeason;
 
         const seasonRow =
             (p.career || []).find((x) => x.season === selectedSeason) || null;
@@ -941,13 +957,13 @@ function renderCompareCards() {
         card.className = "compare-card";
         card.style.background = bg;
         card.innerHTML = `
-            <button class="compare-remove" data-remove-player="${pid}" title="Remove">×</button>
+            <button class="compare-remove" data-remove-instance="${item.instanceId}" title="Remove">×</button>
             <div class="compare-card-head" style="color:${textColor};">
                 <img class="compare-player-img" src="${escapeHtml(p.image || "")}" alt="${escapeHtml(p.player_full_name || p.player_name)}" />
                 <h3 class="compare-player-name">${escapeHtml(displayName)}</h3>
             </div>
             <div class="compare-card-controls">
-                <select data-season-for="${pid}">
+                <select data-instance-for="${item.instanceId}">
                     ${seasons
                         .map(
                             (y) =>
@@ -1061,11 +1077,11 @@ function renderCompareSection(title, metrics, selectedRows) {
 }
 
 function renderCompareStats() {
-    const selectedRows = comparePlayerIds
-        .map((pid) => {
-            const p = compareProfiles.get(pid);
+    const selectedRows = compareItems
+        .map((item) => {
+            const p = compareProfiles.get(item.playerId);
             if (!p) return null;
-            const y = p._selectedSeason ?? chooseSeason(p.career || []);
+            const y = item.selectedSeason ?? chooseSeason(p.career || []);
             const seasonRow =
                 (p.career || []).find((r) => r.season === y) || null;
             if (!seasonRow) return null;
@@ -1105,16 +1121,16 @@ function renderCompareStats() {
 
     compareStats.innerHTML =
         renderCompareSection("General", generalMetrics, selectedRows) +
-        renderCompareSection("Batting Stats", battingMetrics, selectedRows) +
-        renderCompareSection("Bowling Stats", bowlingMetrics, selectedRows);
+        renderCompareSection("Batting", battingMetrics, selectedRows) +
+        renderCompareSection("Bowling", bowlingMetrics, selectedRows);
 }
 
 async function renderComparePage() {
-    const ids = comparePlayerIds.slice(0, COMPARE_MAX);
-    for (const pid of ids) {
-        if (!compareProfiles.has(pid)) {
+    const items = compareItems.slice(0, COMPARE_MAX);
+    for (const item of items) {
+        if (!compareProfiles.has(item.playerId)) {
             try {
-                await loadCompareProfile(pid);
+                await loadCompareProfile(item.playerId);
             } catch (e) {
                 console.error(e);
             }
@@ -1147,7 +1163,7 @@ function renderCompareSearchResults(results) {
 function selectCompareSearchButton(btn) {
     const pid = Number(btn.getAttribute("data-compare-add"));
     if (!Number.isFinite(pid)) return;
-    if (comparePlayerIds.length >= COMPARE_MAX && compareTargetSlot == null) {
+    if (compareItems.length >= COMPARE_MAX && compareTargetSlot == null) {
         closeCompareSearch();
         return;
     }
@@ -1158,16 +1174,16 @@ function selectCompareSearchButton(btn) {
 
 function initComparePage() {
     if (compareInitialized) {
-        comparePlayerIds = getStoredCompareIds();
+        compareItems = getStoredCompareItems();
         renderComparePage();
         return;
     }
 
-    comparePlayerIds = getStoredCompareIds();
+    compareItems = getStoredCompareItems();
     renderComparePage();
 
     addComparePlayerBtn?.addEventListener("click", () => {
-        if (comparePlayerIds.length >= COMPARE_MAX) return;
+        if (compareItems.length >= COMPARE_MAX) return;
         openCompareSearch(null);
     });
 
@@ -1225,24 +1241,28 @@ function initComparePage() {
     });
 
     compareCards?.addEventListener("change", (e) => {
-        const sel = e.target.closest("[data-season-for]");
+        const sel = e.target.closest("[data-instance-for]");
         if (!sel) return;
-        const pid = Number(sel.getAttribute("data-season-for"));
+        const instanceId = sel.getAttribute("data-instance-for");
         const y = Number(sel.value);
-        const p = compareProfiles.get(pid);
-        if (p && Number.isFinite(y)) {
-            p._selectedSeason = y;
+
+        const item = compareItems.find((x) => x.instanceId === instanceId);
+        if (item && Number.isFinite(y)) {
+            item.selectedSeason = y;
+            setStoredCompareItems(compareItems);
             renderComparePage();
         }
     });
 
     compareCards?.addEventListener("click", (e) => {
-        const removeBtn = e.target.closest("[data-remove-player]");
+        const removeBtn = e.target.closest("[data-remove-instance]");
         if (removeBtn) {
-            const pid = Number(removeBtn.getAttribute("data-remove-player"));
-            if (!Number.isFinite(pid)) return;
-            const next = comparePlayerIds.filter((x) => x !== pid);
-            setStoredCompareIds(next);
+            const instanceId = removeBtn.getAttribute("data-remove-instance");
+            if (!instanceId) return;
+            const next = compareItems.filter(
+                (x) => x.instanceId !== instanceId,
+            );
+            setStoredCompareItems(next);
             renderComparePage();
             return;
         }
